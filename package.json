@@ -10,6 +10,19 @@
     "Documentation",
     "Developer Tools"
   ],
+  "keywords": [
+    "discord",
+    "discord.py",
+    "discordpy",
+    "python",
+    "bot",
+    "documentation",
+    "docs",
+    "api",
+    "intents",
+    "embed",
+    "permissions"
+  ],
   "commands": [
     {
       "name": "search-documentation",
