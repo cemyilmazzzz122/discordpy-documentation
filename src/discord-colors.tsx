@@ -25,7 +25,7 @@ export default function DiscordColors() {
                   content={String(decimal)}
                 />
                 <Action.CopyToClipboard
-                  title="Copy Colour Function Object() { [native Code] }"
+                  title="Copy Colour Literal"
                   content={`discord.Colour(${colour.hex.replace("#", "0x")})`}
                 />
               </ActionPanel>

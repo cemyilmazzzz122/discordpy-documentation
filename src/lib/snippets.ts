@@ -59,16 +59,21 @@ function eventBoilerplate(
   entry: DocEntry,
   details: DocDetails | undefined,
 ): string {
+  const variable = getPreferences().botVariable;
   const event = entry.display;
   const parameters = parameterNames(details?.signature ?? null)
     .map(annotate)
     .join(", ");
+  // process_commands only exists on commands.Bot, so a plain Client keeps just the guard.
+  const guard = "    if message.author.bot:\n        return";
   const body =
     event === "on_message"
-      ? "    if message.author.bot:\n        return\n\n    await bot.process_commands(message)"
+      ? variable === "bot"
+        ? `${guard}\n\n    await ${variable}.process_commands(message)`
+        : guard
       : "    ...";
 
-  return `@bot.event\nasync def ${event}(${parameters}):\n${body}`;
+  return `@${variable}.event\nasync def ${event}(${parameters}):\n${body}`;
 }
 
 function decoratorTemplates(): Record<string, string> {
