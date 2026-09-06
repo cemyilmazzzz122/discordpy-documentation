@@ -1,4 +1,5 @@
 import { DocDetails } from "./docpage";
+import { getPreferences } from "./preferences";
 import { DocEntry } from "./types";
 
 const PARAMETER_TYPES: Record<string, string> = {
@@ -70,32 +71,48 @@ function eventBoilerplate(
   return `@bot.event\nasync def ${event}(${parameters}):\n${body}`;
 }
 
-const DECORATOR_TEMPLATES: Record<string, string> = {
-  "discord.app_commands.command": [
-    '@app_commands.command(name="example", description="An example slash command")',
-    "async def example(interaction: discord.Interaction):",
-    '    await interaction.response.send_message("Hello!")',
-  ].join("\n"),
-  "discord.ext.commands.command": [
-    '@commands.command(name="example")',
-    "async def example(ctx: commands.Context):",
-    '    await ctx.send("Hello!")',
-  ].join("\n"),
-  "discord.ext.tasks.loop": [
-    "@tasks.loop(seconds=60)",
-    "async def example():",
-    "    ...",
-    "",
-    "@example.before_loop",
-    "async def before_example():",
-    "    await bot.wait_until_ready()",
-  ].join("\n"),
-};
+function decoratorTemplates(): Record<string, string> {
+  const variable = getPreferences().botVariable;
+  return {
+    "discord.app_commands.command": [
+      '@app_commands.command(name="example", description="An example slash command")',
+      "async def example(interaction: discord.Interaction):",
+      '    await interaction.response.send_message("Hello!")',
+    ].join("\n"),
+    "discord.ext.commands.command": [
+      '@commands.command(name="example")',
+      "async def example(ctx: commands.Context):",
+      '    await ctx.send("Hello!")',
+    ].join("\n"),
+    "discord.ext.tasks.loop": [
+      "@tasks.loop(seconds=60)",
+      "async def example():",
+      "    ...",
+      "",
+      "@example.before_loop",
+      "async def before_example():",
+      `    await ${variable}.wait_until_ready()`,
+    ].join("\n"),
+  };
+}
 
 export function boilerplate(
   entry: DocEntry,
   details: DocDetails | undefined,
 ): string | null {
   if (entry.kind === "event") return eventBoilerplate(entry, details);
-  return DECORATOR_TEMPLATES[entry.name] ?? null;
+  return decoratorTemplates()[entry.name] ?? null;
+}
+
+const SOURCE_REPOSITORY = "repo:Rapptz/discord.py";
+
+export function sourceSearchUrl(entry: DocEntry): string | null {
+  if (entry.kind === "guide") return null;
+
+  const symbol = entry.name.slice(entry.name.lastIndexOf(".") + 1);
+  const pattern =
+    entry.kind === "class" || entry.kind === "exception"
+      ? `class ${symbol}`
+      : `def ${symbol}`;
+  return `https://github.com/search?q=${encodeURIComponent(`${SOURCE_REPOSITORY} "${pattern}"`)}&type=code`;
 }

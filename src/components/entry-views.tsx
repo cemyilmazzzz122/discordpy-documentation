@@ -13,7 +13,12 @@ import { KIND_COLOR, KIND_ICON } from "../lib/appearance";
 import { DocDetails, loadDetails } from "../lib/docpage";
 import { PrimaryAction } from "../lib/preferences";
 import { membersOf } from "../lib/search";
-import { boilerplate, importStatement, markdownLink } from "../lib/snippets";
+import {
+  boilerplate,
+  importStatement,
+  markdownLink,
+  sourceSearchUrl,
+} from "../lib/snippets";
 import { DocEntry, KIND_LABELS, MetaIndex, SECTIONS } from "../lib/types";
 
 export interface ViewContext {
@@ -107,6 +112,7 @@ function EntryActions({
         Boolean(candidate) && candidate?.name !== entry.name,
     );
   const snippet = boilerplate(entry, details);
+  const sourceUrl = sourceSearchUrl(entry);
   const importLine = importStatement(entry);
   const isFavorite = ctx.favorites.includes(entry.name);
 
@@ -204,6 +210,14 @@ function EntryActions({
           content={entry.url}
           shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
         />
+        {sourceUrl ? (
+          <Action.OpenInBrowser
+            title="Search Source on GitHub"
+            url={sourceUrl}
+            icon={Icon.Code}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
+          />
+        ) : null}
       </ActionPanel.Section>
 
       <ActionPanel.Section>

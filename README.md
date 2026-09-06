@@ -41,6 +41,7 @@ Both are derived from the documentation itself rather than a hand-written table,
 | Copy Signature | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>S</kbd> |
 | Copy Markdown Link | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>L</kbd> |
 | Copy Documentation URL | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd> |
+| Search Source on GitHub | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>O</kbd> |
 
 **Copy Import Statement** produces the line you actually need — `from discord import Embed`, `from discord.ext import commands`, `from discord.ui import Button`.
 
@@ -74,13 +75,74 @@ Selecting an entry renders its documentation as Markdown:
 
 Raycast cannot intercept a click on a Markdown link, so cross-references open in the browser. To stay inside Raycast, <kbd>⌘</kbd><kbd>R</kbd> lists every entry the current one references and lets you jump straight into it.
 
+### Permissions Calculator
+
+Pick permissions from a searchable list and get, from the same screen:
+
+- the permissions integer,
+- `discord.Permissions(send_messages=True, manage_roles=True)`,
+- `@commands.has_permissions(...)` for the decorator form,
+- a ready bot invite URL with those permissions and both scopes.
+
+The 52 flags and their bit positions are generated from discord.py's own `permissions.py`, so the integer matches what the library computes. Set your **Application ID** in preferences and the invite URL is complete; leave it empty and it uses a placeholder. The selection is remembered between launches.
+
+### Embed Builder
+
+A form for title, description, colour, author, footer, thumbnail, image, timestamp and fields, which copies the matching Python:
+
+```python
+embed = discord.Embed(
+    title="Server Rules",
+    colour=discord.Colour.blurple(),
+    timestamp=discord.utils.utcnow(),
+)
+embed.add_field(name="Ping", value="Pong", inline=True)
+embed.set_footer(text="Updated daily")
+```
+
+Fields are entered one per line as `name | value | inline`. Quotes and newlines in your text are escaped correctly.
+
+### Discord Colours
+
+All 37 `discord.Colour` presets with a colour swatch, hex and integer value, and copy actions for `discord.Colour.blurple()`, the hex, the integer, or `discord.Colour(0x5865F2)`.
+
 ### Class members
 
 For a class or exception, <kbd>⌘</kbd><kbd>M</kbd> opens a searchable list of its own attributes, properties and methods. Every member has the same actions, so you can go from `Guild` to `Guild.create_text_channel` and read it without going back to the main search.
 
+### Search filters
+
+Filters can be typed straight into the search bar and combined with each other and with a query:
+
+| Filter | Effect |
+| --- | --- |
+| `@event`, `@method`, `@class`, … | Restrict to one kind of entry |
+| `kind:property` | The same, spelled out |
+| `section:tasks` | Restrict to a section (`core`, `events`, `app_commands`, `commands`, `tasks`, `guide`) |
+| `intent:members` | Only entries that require that gateway intent |
+| `module:ui` | Only entries from that module |
+| `faq:` | Only FAQ answers |
+
+`intent:members @event` lists exactly the events that will silently never fire without the members intent. A filter on its own, with no search text, lists everything it matches.
+
+### FAQ
+
+The 23 questions from the documentation's FAQ page are indexed alongside the API, so *"Why does on_message make my commands stop working?"* is one search away and its answer, including the code fix, renders inside Raycast. They appear under **Guides** and can be isolated with the `faq:` filter.
+
 ### Section filter
 
 The dropdown in the search bar narrows everything to one part of the library: **Core API**, **Events** (the 105 `on_*` gateway events, otherwise buried in the middle of the API reference), **App Commands**, **ext.commands**, **ext.tasks**, or **Guides**.
+
+## Raycast AI tools
+
+The extension exposes two tools to Raycast AI, so you can ask questions in AI Chat and get answers grounded in the real documentation instead of a guess:
+
+- **Search Discord.py Documentation** — searches the local index and returns signatures, required intents, coroutine flags, descriptions and examples.
+- **Read Discord.py Documentation Entry** — returns the full documentation for one qualified name, optionally with a class's members.
+
+> `@discordpy-documentation how do I let a user pick several options in a SelectMenu?`
+
+Both read the same on-disk index the commands use, so they work offline for anything already cached and never invent an API that is absent from the results. Raycast AI requires a Raycast Pro subscription.
 
 ## How it works
 
@@ -100,6 +162,8 @@ Every page that gets fetched is written to disk, and every rendered entry is kep
 
 - **Documentation Version** — index the `stable` release branch (default) or `latest`, the master branch, where the newer Discord features land first. Each version keeps its own cache.
 - **Primary Action** — whether <kbd>Enter</kbd> opens the details inside Raycast (default) or goes straight to the browser.
+- **Bot Variable Name** — whether generated boilerplate uses `bot` (default, for `commands.Bot`) or `client` (for `discord.Client`).
+- **Application ID** — your bot's application ID, used to build complete invite URLs in the permissions calculator.
 
 ## Development
 
@@ -112,7 +176,9 @@ npm run lint    # lint against Raycast's extension rules
 
 ## Attribution
 
-Documentation content belongs to the [discord.py](https://github.com/Rapptz/discord.py) project and is fetched live from Read the Docs; this extension only indexes and renders it.
+Documentation content belongs to the [discord.py](https://github.com/Rapptz/discord.py) project and is fetched live from Read the Docs; this extension only indexes and renders it. The permission bits in `src/data/permissions.ts` and the colour values in `src/data/colours.ts` are generated from discord.py's own source.
+
+Note that the documentation carries no `[source]` links, so there is no way to build a line-accurate GitHub link for an entry. **Search Source on GitHub** runs a repository-scoped code search for the definition instead, which always lands on it.
 
 ## License
 

@@ -4,6 +4,15 @@
 
 ### Added
 
+- **Raycast AI tools.** `search-docs` and `read-entry` let Raycast AI answer discord.py questions from the real indexed documentation — signatures, required intents, coroutine flags and examples — instead of guessing.
+- **Permissions Calculator** command: pick permissions, get the integer, `discord.Permissions(...)`, `@commands.has_permissions(...)` and a complete bot invite URL. The 52 flags and bits are generated from discord.py's `permissions.py`.
+- **Embed Builder** command: a form that copies the matching `discord.Embed` code, including fields entered as `name | value | inline`.
+- **Discord Colours** command: all 37 `discord.Colour` presets with swatches, hex and integer values.
+- **Search filters** typed into the search bar: `@event`, `kind:method`, `section:tasks`, `intent:members`, `module:ui` and `faq:`, combinable with each other and with a query. `intent:members @event` lists exactly the events that need the members intent.
+- **FAQ answers** from the documentation's FAQ page are indexed and searchable alongside the API, including the code fixes they contain.
+- **Search Source on GitHub** action. The documentation has no `[source]` links, so this runs a repository-scoped code search for the definition rather than pretending to know the line number.
+- Preferences for the boilerplate bot variable name (`bot` or `client`) and for the application ID used in invite URLs.
+
 - Gateway intent badges and a detail-view warning on every entry whose documentation requires an intent, plus `await` badges on coroutines, both derived from the documentation rather than a hand-written table.
 - Preview pane (<kbd>⌘</kbd><kbd>D</kbd>) that renders the highlighted entry beside the list, remembered between launches.
 - Copy actions for boilerplate (<kbd>⌘</kbd><kbd>B</kbd>), example code (<kbd>⌘</kbd><kbd>E</kbd>), import statement, signature and Markdown link.

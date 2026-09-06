@@ -12,9 +12,11 @@ import {
   documentationPages,
   prefetchPages,
 } from "./lib/docpage";
+import { isFaqEntry, loadFaq } from "./lib/faq";
 import { loadInventory, refreshInventory } from "./lib/inventory";
 import { ensureMeta } from "./lib/metadata";
 import { getPreferences } from "./lib/preferences";
+import { describeFilters, parseQuery } from "./lib/query";
 import { browseEntries, searchEntries } from "./lib/search";
 import { DocEntry, SECTIONS, SectionId } from "./lib/types";
 
@@ -35,13 +37,22 @@ export default function SearchDocumentation() {
     },
   });
 
-  const entries = useMemo(() => inventory?.entries ?? [], [inventory]);
+  const documented = useMemo(() => inventory?.entries ?? [], [inventory]);
+
+  const { data: faq } = usePromise(loadFaq, [], {
+    execute: documented.length > 0,
+  });
+
+  const entries = useMemo(
+    () => [...documented, ...(faq ?? [])],
+    [documented, faq],
+  );
 
   const { data: meta, revalidate: revalidateMeta } = usePromise(
     ensureMeta,
-    [entries],
+    [documented],
     {
-      execute: entries.length > 0,
+      execute: documented.length > 0,
     },
   );
 
@@ -104,17 +115,49 @@ export default function SearchDocumentation() {
   );
 
   const sections = useMemo<EntrySection[]>(() => {
-    const scope =
+    const parsed = parseQuery(query);
+    const badges = meta ?? {};
+
+    let scope =
       section === "all"
         ? entries
         : entries.filter((entry) => entry.section === section);
-    if (query.trim()) {
+
+    if (parsed.faqOnly) scope = scope.filter(isFaqEntry);
+    if (parsed.kind)
+      scope = scope.filter((entry) => entry.kind === parsed.kind);
+    if (parsed.section)
+      scope = scope.filter((entry) => entry.section === parsed.section);
+    if (parsed.module) {
+      scope = scope.filter((entry) =>
+        entry.module.toLowerCase().includes(parsed.module ?? ""),
+      );
+    }
+    if (parsed.intent) {
+      scope = scope.filter((entry) =>
+        badges[entry.anchor]?.intents?.some((intent) =>
+          intent.includes(parsed.intent ?? ""),
+        ),
+      );
+    }
+
+    const filterLabel = describeFilters(parsed);
+    const version = inventory ? `discord.py ${inventory.version}` : undefined;
+    const subtitle =
+      [filterLabel, version].filter(Boolean).join(" · ") || undefined;
+
+    if (parsed.text.trim()) {
       return [
         {
           title: "Results",
-          subtitle: inventory ? `discord.py ${inventory.version}` : undefined,
-          entries: searchEntries(scope, query),
+          subtitle,
+          entries: searchEntries(scope, parsed.text),
         },
+      ];
+    }
+    if (filterLabel) {
+      return [
+        { title: "Results", subtitle, entries: browseEntries(scope, true) },
       ];
     }
 
@@ -139,11 +182,11 @@ export default function SearchDocumentation() {
           section === "all"
             ? "Classes and Guides"
             : (SECTIONS.find((item) => item.id === section)?.title ?? "All"),
-        subtitle: inventory ? `discord.py ${inventory.version}` : undefined,
+        subtitle,
         entries: browsed,
       },
     ].filter((item) => item.entries.length > 0);
-  }, [entries, section, query, favorites, recents, inventory]);
+  }, [entries, section, query, favorites, recents, inventory, meta]);
 
   async function refresh() {
     const toast = await showToast({
@@ -154,7 +197,7 @@ export default function SearchDocumentation() {
       clearDetailsCache();
       await refreshInventory();
       revalidate();
-      await ensureMeta(entries, true);
+      await ensureMeta(documented, true);
       revalidateMeta();
       toast.style = Toast.Style.Success;
       toast.title = "Documentation index refreshed";
@@ -192,7 +235,7 @@ export default function SearchDocumentation() {
       isLoading={isLoading}
       filtering={false}
       onSearchTextChange={setQuery}
-      searchBarPlaceholder="Search discord.py — Client.wait_for, on_message, guild channel…"
+      searchBarPlaceholder="Search discord.py — wait_for, @event, intent:members, faq: commands…"
       emptyTitle={
         query ? "No matching entries" : "Search the discord.py documentation"
       }
