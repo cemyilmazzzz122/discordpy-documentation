@@ -1,0 +1,43 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "discordpy-documentation",
+  "title": "Discord.py Documentation",
+  "description": "Quickly search the discord.py documentation and read it without leaving Raycast.",
+  "icon": "icon.png",
+  "author": "cemyilmazzzz122",
+  "license": "MIT",
+  "categories": [
+    "Documentation",
+    "Developer Tools"
+  ],
+  "commands": [
+    {
+      "name": "search-documentation",
+      "title": "Search Documentation",
+      "subtitle": "Discord.py",
+      "description": "Search classes, methods, attributes, events and exceptions in the discord.py documentation",
+      "mode": "view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.90.0",
+    "@raycast/utils": "^1.17.0",
+    "turndown": "^7.2.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.11",
+    "@types/node": "20.8.10",
+    "@types/react": "18.3.3",
+    "@types/turndown": "^5.0.5",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}
