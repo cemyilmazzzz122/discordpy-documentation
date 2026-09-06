@@ -36,6 +36,7 @@
 
 - The doubled `discord.discord.ext.commands.on_*` names Sphinx emits for `ext.commands` events are normalised for display and search while still resolving to the real anchor.
 - The generated `on_message` boilerplate now honours the bot variable preference, and omits `process_commands` when the variable is `client`, since that method only exists on `commands.Bot`.
+- <kbd>⌘</kbd><kbd>P</kbd> is reserved by Raycast, which silently dropped the Embed Builder's Show Code shortcut; it now uses the sanctioned Quick Look shortcut. Show Referenced Entries moved off <kbd>⌘</kbd><kbd>R</kbd>, which conflicted with the Refresh Index action in the same panel, and actions with a Raycast convention now use `Keyboard.Shortcut.Common` so they adapt per platform.
 - A copy action in Discord Colours was titled "Copy Colour Function Object() { [native Code] }" after `ray lint --fix` mangled the word "Constructor".
 - Example code and cross-references are read from the rendered Markdown, so they never include content from nested member documentation.
 - The 16 whole-page guide entries (`faq`, `quickstart`, `intents`, `logging`, …) have no anchor in the inventory and rendered as "No inline documentation was found"; they now fall back to the page's first section.

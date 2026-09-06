@@ -5,6 +5,7 @@ import {
   Detail,
   Form,
   Icon,
+  Keyboard,
   showToast,
   Toast,
   useNavigation,
@@ -46,7 +47,7 @@ export default function EmbedBuilder() {
           <Action.SubmitForm
             title="Show Code"
             icon={Icon.Eye}
-            shortcut={{ modifiers: ["cmd"], key: "p" }}
+            shortcut={Keyboard.Shortcut.Common.ToggleQuickLook}
             onSubmit={(values: EmbedInput) =>
               push(<CodePreview code={buildEmbedCode(values)} />)
             }

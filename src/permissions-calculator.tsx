@@ -3,6 +3,7 @@ import {
   ActionPanel,
   Color,
   Icon,
+  Keyboard,
   List,
   showToast,
   Toast,
@@ -158,7 +159,7 @@ export default function PermissionsCalculator() {
                   <Action.CopyToClipboard
                     title="Copy Permission Name"
                     content={permission.name}
-                    shortcut={{ modifiers: ["cmd"], key: "." }}
+                    shortcut={Keyboard.Shortcut.Common.CopyName}
                   />
                   {resultActions.props.children}
                 </ActionPanel>

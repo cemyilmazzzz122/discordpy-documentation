@@ -30,18 +30,19 @@ Both are derived from the documentation itself rather than a hand-written table,
 | --- | --- |
 | Show Details | <kbd>Enter</kbd> |
 | Show Members (classes and exceptions) | <kbd>⌘</kbd><kbd>M</kbd> |
-| Show Referenced Entries | <kbd>⌘</kbd><kbd>R</kbd> |
+| Show Referenced Entries | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd> |
 | Copy Boilerplate | <kbd>⌘</kbd><kbd>B</kbd> |
 | Copy Example Code | <kbd>⌘</kbd><kbd>E</kbd> |
 | Toggle Preview pane | <kbd>⌘</kbd><kbd>D</kbd> |
 | Add to Favorites | <kbd>⌘</kbd><kbd>F</kbd> |
 | Open in Browser | <kbd>⌘</kbd><kbd>O</kbd> |
-| Copy Qualified Name | <kbd>⌘</kbd><kbd>.</kbd> |
+| Copy Qualified Name | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>.</kbd> |
 | Copy Import Statement | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>I</kbd> |
 | Copy Signature | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>S</kbd> |
 | Copy Markdown Link | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>L</kbd> |
 | Copy Documentation URL | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd> |
 | Search Source on GitHub | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>O</kbd> |
+| Refresh Index | <kbd>⌘</kbd><kbd>R</kbd> |
 
 **Copy Import Statement** produces the line you actually need — `from discord import Embed`, `from discord.ext import commands`, `from discord.ui import Button`.
 

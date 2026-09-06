@@ -1,4 +1,4 @@
-import { Action, Icon, List, showToast, Toast } from "@raycast/api";
+import { Action, Icon, Keyboard, List, showToast, Toast } from "@raycast/api";
 import { useLocalStorage, usePromise } from "@raycast/utils";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -262,6 +262,7 @@ export default function SearchDocumentation() {
           <Action
             title="Refresh Index"
             icon={Icon.ArrowClockwise}
+            shortcut={Keyboard.Shortcut.Common.Refresh}
             onAction={refresh}
           />
           <Action

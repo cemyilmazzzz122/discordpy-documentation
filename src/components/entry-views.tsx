@@ -4,6 +4,7 @@ import {
   Color,
   Detail,
   Icon,
+  Keyboard,
   List,
   useNavigation,
 } from "@raycast/api";
@@ -129,6 +130,7 @@ function EntryActions({
   const openInBrowser = (
     <Action.OpenInBrowser
       url={entry.url}
+      shortcut={Keyboard.Shortcut.Common.Open}
       onOpen={() => ctx.addRecent(entry.name)}
     />
   );
@@ -150,7 +152,7 @@ function EntryActions({
           <Action
             title={`Show ${references.length} Referenced Entries`}
             icon={Icon.Link}
-            shortcut={{ modifiers: ["cmd"], key: "r" }}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "r" }}
             onAction={() =>
               push(
                 <ReferenceList
@@ -198,7 +200,7 @@ function EntryActions({
         <Action.CopyToClipboard
           title="Copy Qualified Name"
           content={entry.name}
-          shortcut={{ modifiers: ["cmd"], key: "." }}
+          shortcut={Keyboard.Shortcut.Common.CopyName}
         />
         <Action.CopyToClipboard
           title="Copy Markdown Link"
@@ -208,14 +210,14 @@ function EntryActions({
         <Action.CopyToClipboard
           title="Copy Documentation URL"
           content={entry.url}
-          shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
+          shortcut={Keyboard.Shortcut.Common.CopyDeeplink}
         />
         {sourceUrl ? (
           <Action.OpenInBrowser
             title="Search Source on GitHub"
             url={sourceUrl}
             icon={Icon.Code}
-            shortcut={{ modifiers: ["cmd", "shift"], key: "o" }}
+            shortcut={Keyboard.Shortcut.Common.OpenWith}
           />
         ) : null}
       </ActionPanel.Section>
