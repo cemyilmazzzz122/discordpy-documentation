@@ -97,10 +97,10 @@ function densePages(entries: DocEntry[]): string[] {
     .map(([page]) => page);
 }
 
-async function scan(entries: DocEntry[]): Promise<MetaIndex> {
+async function scan(entries: DocEntry[], force: boolean): Promise<MetaIndex> {
   const meta: MetaIndex = {};
   for (const page of densePages(entries)) {
-    scanPage(await fetchPage(page), meta);
+    scanPage(await fetchPage(page, force), meta);
   }
   return meta;
 }
@@ -123,7 +123,7 @@ export async function ensureMeta(
   if (!entries.length) return stored?.meta ?? {};
 
   try {
-    const meta = await scan(entries);
+    const meta = await scan(entries, force);
     await mkdir(environment.supportPath, { recursive: true });
     await writeFile(
       metaFile(),

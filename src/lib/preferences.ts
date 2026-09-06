@@ -1,22 +1,10 @@
 import { getPreferenceValues } from "@raycast/api";
 
-export type DocsVersion = "stable" | "latest";
-export type PrimaryAction = "detail" | "browser";
-export type BotVariable = "bot" | "client";
+export type DocsVersion = Preferences["docsVersion"];
+export type PrimaryAction = Preferences["primaryAction"];
+export type BotVariable = Preferences["botVariable"];
 
-interface ExtensionPreferences {
-  docsVersion: DocsVersion;
-  primaryAction: PrimaryAction;
-  botVariable: BotVariable;
-  applicationId: string;
-}
-
-export function getPreferences(): ExtensionPreferences {
-  const preferences = getPreferenceValues<Partial<ExtensionPreferences>>();
-  return {
-    docsVersion: preferences.docsVersion ?? "stable",
-    primaryAction: preferences.primaryAction ?? "detail",
-    botVariable: preferences.botVariable ?? "bot",
-    applicationId: preferences.applicationId?.trim() ?? "",
-  };
+export function getPreferences(): Preferences {
+  const preferences = getPreferenceValues<Preferences>();
+  return { ...preferences, applicationId: preferences.applicationId.trim() };
 }

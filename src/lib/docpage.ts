@@ -233,7 +233,8 @@ function prepare(html: string, page: string): string {
     )
     .replace(
       /(href|src)="(?!https?:|#|data:)([^"]+)"/g,
-      (_, attribute, target) => `${attribute}="${new URL(target, base).href}"`,
+      (_, attribute, target) =>
+        `${attribute}="${new URL(target, base + page).href}"`,
     );
 }
 

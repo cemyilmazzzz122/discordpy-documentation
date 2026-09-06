@@ -195,10 +195,10 @@ export default function SearchDocumentation() {
     });
     try {
       clearDetailsCache();
-      await refreshInventory();
-      revalidate();
-      await ensureMeta(documented, true);
-      revalidateMeta();
+      const refreshed = await refreshInventory();
+      await ensureMeta(refreshed.entries, true);
+      await revalidate();
+      await revalidateMeta();
       toast.style = Toast.Style.Success;
       toast.title = "Documentation index refreshed";
     } catch (error) {
