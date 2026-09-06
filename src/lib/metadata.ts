@@ -1,7 +1,6 @@
 import { environment } from "@raycast/api";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { HTMLElement as HtmlNode, parse } from "node-html-parser";
 import { CACHE_SCHEMA, docsVersion } from "./constants";
 import { fetchPage } from "./docpage";
 import { DocEntry, EntryMeta, MetaIndex } from "./types";
@@ -22,29 +21,25 @@ function metaFile(): string {
   );
 }
 
-function ownText(definition: HtmlNode): string {
-  return definition.childNodes
-    .filter((node) => {
-      const element = node as HtmlNode;
-      return !(element.tagName === "DL" && element.classList?.contains("py"));
-    })
-    .map((node) => node.text)
-    .join(" ");
-}
+const TERM_PATTERN = /<dt class="sig[^"]*"\s+id="([^"]+)"/g;
+const BODY_LIMIT = 20000;
 
-function directBody(term: HtmlNode): HtmlNode | null {
-  const parent = term.parentNode as HtmlNode | null;
-  for (const child of parent?.childNodes ?? []) {
-    if ((child as HtmlNode).tagName === "DD") return child as HtmlNode;
-  }
-  return null;
+function stripTags(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function describe(signature: string, body: string): EntryMeta | null {
   const meta: EntryMeta = {};
 
   if (
-    /^\s*(?:await|async\s+with|async\s+for)\b/.test(signature) ||
+    /^(?:await|async with|async for)\b/.test(signature) ||
     /this function is a\s*coroutine/i.test(body)
   ) {
     meta.coroutine = true;
@@ -55,6 +50,39 @@ function describe(signature: string, body: string): EntryMeta | null {
   if (intents.size) meta.intents = [...intents];
 
   return meta.coroutine || meta.intents ? meta : null;
+}
+
+function scanPage(html: string, meta: MetaIndex): void {
+  const terms = [...html.matchAll(TERM_PATTERN)];
+
+  for (let index = 0; index < terms.length; index++) {
+    const term = terms[index];
+    const from = term.index ?? 0;
+    const termEnd = html.indexOf("</dt>", from);
+    if (termEnd === -1) continue;
+
+    // Sphinx documents paired events as two <dt> elements sharing one <dd>,
+    // so the body starts at the next <dd> rather than right after this term.
+    const bodyStart = html.indexOf("<dd", termEnd);
+    if (bodyStart === -1) continue;
+
+    const following = terms.find(
+      (candidate) => (candidate.index ?? 0) > bodyStart,
+    );
+    const nextTerm = following?.index ?? html.length;
+    const nested = html.indexOf('<dl class="py', bodyStart);
+    const bodyEnd = Math.min(
+      nextTerm,
+      nested === -1 ? nextTerm : nested,
+      bodyStart + BODY_LIMIT,
+    );
+
+    const described = describe(
+      stripTags(html.slice(from, termEnd)),
+      stripTags(html.slice(bodyStart, bodyEnd)),
+    );
+    if (described) meta[term[1]] = described;
+  }
 }
 
 function densePages(entries: DocEntry[]): string[] {
@@ -71,19 +99,9 @@ function densePages(entries: DocEntry[]): string[] {
 
 async function scan(entries: DocEntry[]): Promise<MetaIndex> {
   const meta: MetaIndex = {};
-
   for (const page of densePages(entries)) {
-    const root = parse(await fetchPage(page));
-    for (const term of root.querySelectorAll("dl.py > dt[id]")) {
-      const id = term.getAttribute("id");
-      const body = directBody(term);
-      if (!id || !body) continue;
-
-      const described = describe(term.text, ownText(body));
-      if (described) meta[id] = described;
-    }
+    scanPage(await fetchPage(page), meta);
   }
-
   return meta;
 }
 

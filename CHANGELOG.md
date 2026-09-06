@@ -22,6 +22,8 @@
 
 ### Fixed
 
+- **Out-of-memory crashes.** Rendering an entry parsed the whole documentation page into a DOM, which costs 108 MB for `api.html` alone and was retained between lookups; the metadata scan did the same for four pages. Only a bounded slice around the anchor is parsed now, the metadata scan works on strings, and the page cache is capped. Peak heap across the full workload dropped from over 108 MB to 48 MB.
+
 - The doubled `discord.discord.ext.commands.on_*` names Sphinx emits for `ext.commands` events are normalised for display and search while still resolving to the real anchor.
 - Example code and cross-references are read from the rendered Markdown, so they never include content from nested member documentation.
 - The 16 whole-page guide entries (`faq`, `quickstart`, `intents`, `logging`, …) have no anchor in the inventory and rendered as "No inline documentation was found"; they now fall back to the page's first section.

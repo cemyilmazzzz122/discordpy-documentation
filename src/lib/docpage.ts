@@ -21,8 +21,20 @@ export interface DocDetails {
 const PAGE_TTL = 24 * 60 * 60 * 1000;
 const GUIDE_LIMIT = 20000;
 
+const MEMORY_PAGE_LIMIT = 2;
+const MAX_BLOCK = 300000;
+
 const memoryPages = new Map<string, string>();
-let parsedPage: { key: string; root: HtmlNode } | null = null;
+
+function rememberPage(key: string, html: string): void {
+  memoryPages.delete(key);
+  memoryPages.set(key, html);
+  while (memoryPages.size > MEMORY_PAGE_LIMIT) {
+    const oldest = memoryPages.keys().next().value;
+    if (oldest === undefined) break;
+    memoryPages.delete(oldest);
+  }
+}
 const detailsCache = new Cache({
   namespace: `details-${CACHE_SCHEMA}`,
   capacity: 10 * 1024 * 1024,
@@ -59,7 +71,11 @@ async function storePage(page: string, html: string): Promise<void> {
   }
 }
 
-export async function fetchPage(page: string, force = false): Promise<string> {
+export async function fetchPage(
+  page: string,
+  force = false,
+  remember = true,
+): Promise<string> {
   const key = `${docsVersion()}:${page}`;
   const remembered = memoryPages.get(key);
   if (remembered && !force) return remembered;
@@ -67,7 +83,7 @@ export async function fetchPage(page: string, force = false): Promise<string> {
   if (!force) {
     const stored = await readStoredPage(page, false);
     if (stored) {
-      memoryPages.set(key, stored);
+      rememberPage(key, stored);
       return stored;
     }
   }
@@ -79,26 +95,17 @@ export async function fetchPage(page: string, force = false): Promise<string> {
     if (!response.ok)
       throw new Error(`Failed to load ${page} (HTTP ${response.status})`);
     const html = await response.text();
-    memoryPages.set(key, html);
+    if (remember) rememberPage(key, html);
     await storePage(page, html);
     return html;
   } catch (error) {
     const stale = await readStoredPage(page, true);
     if (stale) {
-      memoryPages.set(key, stale);
+      rememberPage(key, stale);
       return stale;
     }
     throw error;
   }
-}
-
-async function parsedRoot(page: string): Promise<HtmlNode> {
-  const key = `${docsVersion()}:${page}`;
-  if (parsedPage?.key === key) return parsedPage.root;
-
-  const root = parse(await fetchPage(page));
-  parsedPage = { key, root };
-  return root;
 }
 
 function trimGuideSection(section: HtmlNode): string {
@@ -125,6 +132,65 @@ interface Block {
   signature: string | null;
   body: HtmlNode | null;
   html: string;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function anchorIndex(html: string, anchor: string): number {
+  const match = new RegExp(`\\sid="${escapeRegExp(anchor)}"`).exec(html);
+  return match ? match.index + 1 : -1;
+}
+
+function balancedEnd(html: string, start: number, tag: string): number {
+  const open = new RegExp(`<${tag}[\\s>]`, "g");
+  const close = new RegExp(`</${tag}>`, "g");
+  const limit = Math.min(html.length, start + MAX_BLOCK);
+  open.lastIndex = start + 1;
+  close.lastIndex = start + 1;
+
+  let depth = 1;
+  while (depth > 0) {
+    const closing = close.exec(html);
+    if (!closing || closing.index > limit) return limit;
+
+    let opening = open.exec(html);
+    while (opening && opening.index < closing.index) {
+      depth++;
+      opening = open.exec(html);
+    }
+    if (opening) open.lastIndex = opening.index;
+
+    depth--;
+    close.lastIndex = closing.index + closing[0].length;
+    if (depth === 0) return close.lastIndex;
+  }
+  return limit;
+}
+
+function sliceAround(html: string, anchor: string): string | null {
+  if (!anchor) {
+    const start = html.indexOf("<section");
+    return start === -1
+      ? null
+      : html.slice(start, balancedEnd(html, start, "section"));
+  }
+
+  const index = anchorIndex(html, anchor);
+  if (index === -1) return null;
+
+  const term = html.lastIndexOf("<dt", index);
+  const definition = html.lastIndexOf("<dl", index);
+
+  if (definition !== -1 && term !== -1 && definition < term) {
+    const end = balancedEnd(html, definition, "dl");
+    if (index < end) return html.slice(definition, end);
+  }
+
+  const section = html.lastIndexOf("<section", index);
+  if (section === -1) return null;
+  return html.slice(section, balancedEnd(html, section, "section"));
 }
 
 function sectionBlock(section: HtmlNode | null): Block | null {
@@ -247,7 +313,8 @@ export async function loadDetails(entry: DocEntry): Promise<DocDetails> {
   const cached = detailsCache.get(cacheKey(entry));
   if (cached) return JSON.parse(cached) as DocDetails;
 
-  const block = extractBlock(await parsedRoot(entry.page), entry.anchor);
+  const slice = sliceAround(await fetchPage(entry.page), entry.anchor);
+  const block = slice ? extractBlock(parse(slice), entry.anchor) : null;
 
   if (!block) {
     return {
@@ -277,7 +344,6 @@ export async function loadDetails(entry: DocEntry): Promise<DocDetails> {
 export function clearDetailsCache(): void {
   detailsCache.clear();
   memoryPages.clear();
-  parsedPage = null;
 }
 
 export function documentationPages(entries: DocEntry[]): string[] {
@@ -290,7 +356,7 @@ export async function prefetchPages(
 ): Promise<void> {
   let done = 0;
   for (const page of pages) {
-    await fetchPage(page, true);
+    await fetchPage(page, true, false);
     onProgress(++done, pages.length);
   }
 }
