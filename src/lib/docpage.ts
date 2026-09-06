@@ -127,7 +127,14 @@ interface Block {
   html: string;
 }
 
+function sectionBlock(section: HtmlNode | null): Block | null {
+  if (!section) return null;
+  return { signature: null, body: section, html: trimGuideSection(section) };
+}
+
 function extractBlock(root: HtmlNode, anchor: string): Block | null {
+  if (!anchor) return sectionBlock(root.querySelector("section"));
+
   const target = root.querySelector(`[id="${anchor.replace(/"/g, '\\"')}"]`);
   if (!target) return null;
 
@@ -137,10 +144,9 @@ function extractBlock(root: HtmlNode, anchor: string): Block | null {
     return { signature: target.text, body, html: body?.innerHTML ?? "" };
   }
 
-  const section =
-    target.closest("section") ?? (target.parentNode as HtmlNode | null);
-  if (!section) return null;
-  return { signature: null, body: section, html: trimGuideSection(section) };
+  return sectionBlock(
+    target.closest("section") ?? (target.parentNode as HtmlNode | null),
+  );
 }
 
 function cleanSignature(text: string): string {
@@ -160,8 +166,8 @@ function prepare(html: string, page: string): string {
       (_, target) => `href="${base + page}#${target}"`,
     )
     .replace(
-      /href="(?!https?:|#)([^"]+)"/g,
-      (_, target) => `href="${new URL(target, base).href}"`,
+      /(href|src)="(?!https?:|#|data:)([^"]+)"/g,
+      (_, attribute, target) => `${attribute}="${new URL(target, base).href}"`,
     );
 }
 

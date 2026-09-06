@@ -75,7 +75,7 @@ function score(entry: DocEntry, joined: string, tokens: string[]): number {
   return base + KIND_WEIGHT[entry.kind] * 4 - Math.min(short.length, 60) / 10;
 }
 
-function byPromimence(a: DocEntry, b: DocEntry): number {
+function byProminence(a: DocEntry, b: DocEntry): number {
   return (
     KIND_WEIGHT[b.kind] - KIND_WEIGHT[a.kind] || a.name.localeCompare(b.name)
   );
@@ -91,7 +91,7 @@ export function browseEntries(
         (entry) => entry.kind === "class" || entry.kind === "guide",
       );
   return [...shown]
-    .sort(scoped ? (a, b) => a.name.localeCompare(b.name) : byPromimence)
+    .sort(scoped ? (a, b) => a.name.localeCompare(b.name) : byProminence)
     .slice(0, BROWSE_LIMIT);
 }
 
@@ -124,5 +124,5 @@ export function membersOf(entries: DocEntry[], parent: DocEntry): DocEntry[] {
         entry.name.startsWith(prefix) &&
         !entry.name.slice(prefix.length).includes("."),
     )
-    .sort(byPromimence);
+    .sort(byProminence);
 }

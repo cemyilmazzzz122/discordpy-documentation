@@ -24,6 +24,9 @@
 
 - The doubled `discord.discord.ext.commands.on_*` names Sphinx emits for `ext.commands` events are normalised for display and search while still resolving to the real anchor.
 - Example code and cross-references are read from the rendered Markdown, so they never include content from nested member documentation.
+- The 16 whole-page guide entries (`faq`, `quickstart`, `intents`, `logging`, …) have no anchor in the inventory and rendered as "No inline documentation was found"; they now fall back to the page's first section.
+- Relative image sources are rewritten to absolute URLs instead of rendering as broken links.
+- The intent warning in the detail view is keyed by anchor like every other metadata lookup, so it also appears for the `ext.commands` events whose upstream ids are doubled.
 
 ## [Initial Version] - 2026-09-06
 

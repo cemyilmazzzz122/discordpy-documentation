@@ -51,7 +51,7 @@ function detailMarkdown(
   details: DocDetails | undefined,
   meta: MetaIndex,
 ): string {
-  const notice = intentNotice(meta[entry.name]?.intents);
+  const notice = intentNotice(meta[entry.anchor]?.intents);
   const signature = details?.signature
     ? `\`\`\`python\n${details.signature}\n\`\`\``
     : "";
