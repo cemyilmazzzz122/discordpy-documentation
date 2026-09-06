@@ -2,11 +2,14 @@ import { environment } from "@raycast/api";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { inflateSync } from "node:zlib";
-import { DOCS_BASE } from "./constants";
+import {
+  CACHE_SCHEMA,
+  docsBase,
+  docsVersion,
+  timeoutSignal,
+} from "./constants";
 import { DocEntry, EntryKind, Inventory, SectionId } from "./types";
 
-const INVENTORY_URL = `${DOCS_BASE}objects.inv`;
-const CACHE_FILE = "inventory-stable.json";
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
 const INVENTORY_LINE = /^(.+?)\s+(\S+):(\S+)\s+(-?\d+)\s+(\S+)\s*(.*)$/;
@@ -103,11 +106,12 @@ function parseInventory(raw: Uint8Array): Inventory {
     const [page, anchor = ""] = uri.split("#");
     if (IGNORED_PAGES.includes(page)) continue;
 
-    const kind = resolveKind(domain === "py" ? role : "guide", name);
-    const { module, display } = splitModule(name);
+    const qualified = name.replace(/^discord\.discord\./, "discord.");
+    const kind = resolveKind(domain === "py" ? role : "guide", qualified);
+    const { module, display } = splitModule(qualified);
 
     entries.push({
-      name,
+      name: qualified,
       display:
         kind === "guide" && rawDisplay && rawDisplay !== "-"
           ? rawDisplay
@@ -117,7 +121,7 @@ function parseInventory(raw: Uint8Array): Inventory {
       section: resolveSection(kind, page),
       page,
       anchor,
-      url: DOCS_BASE + uri,
+      url: docsBase() + uri,
     });
   }
 
@@ -128,7 +132,10 @@ function parseInventory(raw: Uint8Array): Inventory {
 }
 
 function cachePath(): string {
-  return path.join(environment.supportPath, CACHE_FILE);
+  return path.join(
+    environment.supportPath,
+    `inventory-${CACHE_SCHEMA}-${docsVersion()}.json`,
+  );
 }
 
 async function readCache(): Promise<Inventory | null> {
@@ -146,7 +153,9 @@ async function writeCache(inventory: Inventory): Promise<void> {
 }
 
 async function download(): Promise<Inventory> {
-  const response = await fetch(INVENTORY_URL);
+  const response = await fetch(`${docsBase()}objects.inv`, {
+    signal: timeoutSignal(),
+  });
   if (!response.ok)
     throw new Error(
       `Failed to download the documentation index (HTTP ${response.status})`,

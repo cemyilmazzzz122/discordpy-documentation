@@ -2,7 +2,7 @@
 
 A Raycast extension that searches the entire [discord.py](https://discordpy.readthedocs.io/en/stable/) documentation and renders it inside Raycast — every class, method, attribute, property, event and exception, with descriptions, signatures, parameters and code examples, without opening a browser.
 
-Looking up `Client.wait_for` or remembering which intent `on_member_join` needs usually means leaving your editor, loading a large documentation page and scrolling to the right anchor. This extension keeps that lookup one hotkey away and shows the same content as Markdown in the Raycast window.
+Looking up `Client.wait_for` or remembering which intent `on_member_join` needs usually means leaving your editor, loading a large documentation page and scrolling to the right anchor. This extension keeps that lookup one hotkey away, and adds the two things the documentation makes you dig for: **which gateway intent an entry requires**, and **whether it has to be awaited**.
 
 ## Commands
 
@@ -10,57 +10,96 @@ Looking up `Client.wait_for` or remembering which intent `on_member_join` needs 
 
 Type any part of a name and the matching entries appear instantly.
 
-- Search is fuzzy and dot-aware, so `Client.wait`, `waitfor` and `wait_for` all find `Client.wait_for`.
-- Results are ranked by how closely they match and by how prominent the entry is — a class outranks an attribute that happens to contain the same substring.
-- Each result shows its module (`discord`, `discord.ext.commands`, `discord.app_commands`, …) as a subtitle and a colour-coded kind tag.
-- With an empty search bar the list shows every class and guide section, so it doubles as a browsable index.
+- Search is fuzzy, dot-aware and token-based: `Client.wait`, `waitfor` and `wait for` all find `Client.wait_for`, and `guild channel` finds `GuildChannel` and the `on_guild_channel_*` events.
+- Multi-word queries require every word to match at a name boundary, so `on message` ranks `on_message` first instead of every attribute that happens to contain the letters.
+- Results are ranked by match quality and by how prominent the entry is — a class outranks an attribute containing the same substring.
+- With an empty search bar the list shows your favorites, your recent lookups, and then a browsable index. Pick a section from the dropdown and the empty search bar lists **that whole section** alphabetically.
 
-Press <kbd>Enter</kbd> on a result to read it, or open the action panel (<kbd>⌘</kbd><kbd>K</kbd>) for the other actions:
+### Intent and coroutine badges
+
+The two mistakes every discord.py developer makes at least once are visible directly in the result list:
+
+- **`intent: members`** — a yellow badge on every entry whose documentation says it needs a gateway intent, with a warning at the top of the detail view. This is why `on_member_join` never fires.
+- **`await`** — a blue badge on every coroutine, so you know a call has to be awaited without opening it.
+
+Both are derived from the documentation itself rather than a hand-written table, so they stay correct across releases. The index currently finds 629 entries that need one badge or the other.
+
+### Actions
 
 | Action | Shortcut |
 | --- | --- |
 | Show Details | <kbd>Enter</kbd> |
 | Show Members (classes and exceptions) | <kbd>⌘</kbd><kbd>M</kbd> |
+| Show Referenced Entries | <kbd>⌘</kbd><kbd>R</kbd> |
+| Copy Boilerplate | <kbd>⌘</kbd><kbd>B</kbd> |
+| Copy Example Code | <kbd>⌘</kbd><kbd>E</kbd> |
+| Toggle Preview pane | <kbd>⌘</kbd><kbd>D</kbd> |
+| Add to Favorites | <kbd>⌘</kbd><kbd>F</kbd> |
 | Open in Browser | <kbd>⌘</kbd><kbd>O</kbd> |
 | Copy Qualified Name | <kbd>⌘</kbd><kbd>.</kbd> |
+| Copy Import Statement | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>I</kbd> |
+| Copy Signature | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>S</kbd> |
+| Copy Markdown Link | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>L</kbd> |
 | Copy Documentation URL | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd> |
 
-### Section filter
+**Copy Import Statement** produces the line you actually need — `from discord import Embed`, `from discord.ext import commands`, `from discord.ui import Button`.
 
-The dropdown in the search bar narrows the search to one part of the library:
+**Copy Boilerplate** produces working code rather than a name. On an event it builds the handler from the event's real signature and annotates the parameters it recognises:
 
-- **Core API** — everything in `discord` itself.
-- **Events** — the ~105 `on_*` gateway events, which are otherwise buried in the middle of the API reference.
-- **App Commands** — the `discord.app_commands` slash-command framework.
-- **ext.commands** / **ext.tasks** — the prefix-command and task-loop extensions.
-- **Guides** — narrative documentation sections such as *A Primer to Gateway Intents*.
+```python
+@bot.event
+async def on_message(message: discord.Message):
+    if message.author.bot:
+        return
+
+    await bot.process_commands(message)
+```
+
+It also covers `app_commands.command`, `commands.command` and `tasks.loop`. **Copy Example Code** grabs the first Python example out of the entry's own documentation.
+
+### Preview pane
+
+<kbd>⌘</kbd><kbd>D</kbd> splits the window: the list on the left, the full rendered documentation for the highlighted entry on the right. Arrow through results and read signatures and parameters without ever pressing <kbd>Enter</kbd>. The choice is remembered between launches.
 
 ### Details view
 
 Selecting an entry renders its documentation as Markdown:
 
+- An intent warning at the top when one applies.
 - The Python signature as a syntax-highlighted code block, including `await`, positional-only markers and default values.
 - The full description, with `Note` and `Warning` admonitions kept as blockquotes and *Changed in version* notices preserved.
 - **Parameters**, **Returns**, **Return type** and **Raises** field lists.
 - Code examples as Python blocks.
-- Cross-references rewritten to absolute links, so a mention of another class is clickable.
+- Cross-references rewritten to absolute links.
 
-The metadata panel shows the entry's kind, section, fully qualified name and a direct link to the page on Read the Docs.
+Raycast cannot intercept a click on a Markdown link, so cross-references open in the browser. To stay inside Raycast, <kbd>⌘</kbd><kbd>R</kbd> lists every entry the current one references and lets you jump straight into it.
 
 ### Class members
 
-For a class or exception, <kbd>⌘</kbd><kbd>M</kbd> opens a list of its own attributes, properties and methods, sorted by kind and searchable on its own. Every member has the same actions, so you can go from `Guild` to `Guild.create_text_channel` and read it without going back to the main search.
+For a class or exception, <kbd>⌘</kbd><kbd>M</kbd> opens a searchable list of its own attributes, properties and methods. Every member has the same actions, so you can go from `Guild` to `Guild.create_text_channel` and read it without going back to the main search.
+
+### Section filter
+
+The dropdown in the search bar narrows everything to one part of the library: **Core API**, **Events** (the 105 `on_*` gateway events, otherwise buried in the middle of the API reference), **App Commands**, **ext.commands**, **ext.tasks**, or **Guides**.
 
 ## How it works
 
-There is no JSON API for discord.py the way there is for discord.js, so the extension uses the two artefacts Sphinx already publishes:
+There is no JSON API for discord.py the way there is for discord.js, so the extension uses the artefacts Sphinx already publishes:
 
-1. **`objects.inv`** — the intersphinx inventory, a ~31 KB zlib-compressed index of every documented object with its page and anchor. It is downloaded once, parsed, de-duplicated (Sphinx lists `discord.Embed` and `discord.embeds.Embed` as separate aliases of the same anchor) and cached on disk for 24 hours. All searching happens locally against that cache, so typing never hits the network.
-2. **The documentation page** — when you open an entry, only then is its page fetched, the `<dl>` block for that anchor extracted, and converted to Markdown. Pages are kept in memory for the rest of the session, so subsequent lookups on the same page are instant.
+1. **`objects.inv`** — the intersphinx inventory, a ~31 KB zlib-compressed index of every documented object with its page and anchor. Its 4932 raw entries become 4484 after dropping changelog/migration anchors and collapsing the 361 module aliases Sphinx emits (`discord.Embed` and `discord.embeds.Embed` point at the same anchor). Cached on disk for 24 hours; all searching happens locally against that cache, so typing never hits the network.
+2. **The API reference pages** — scanned once per day to build the intent and coroutine index.
+3. **The entry's own page** — fetched when you open an entry, parsed with `node-html-parser`, and the block for that anchor converted to Markdown.
 
-Use **Refresh Index** from the action panel of the root list to re-download the inventory before the 24-hour cache expires, for example after a new discord.py release. The extension always tracks the `stable` branch, and the currently indexed version is shown next to the results heading.
+### Offline use
 
-If the download fails, a previously cached index is used instead, so the extension keeps working offline for anything you have already looked up.
+Every page that gets fetched is written to disk, and every rendered entry is kept in Raycast's cache, so anything you have already opened works with no network at all. **Prefetch All Docs for Offline Use**, in the action panel of the root list, downloads all of it up front — useful before a flight. If a request fails or times out (15 s), the extension falls back to the stored copy instead of failing.
+
+**Refresh Index** re-downloads the inventory and rebuilds the badge index before the 24-hour cache expires, for example after a new discord.py release.
+
+## Preferences
+
+- **Documentation Version** — index the `stable` release branch (default) or `latest`, the master branch, where the newer Discord features land first. Each version keeps its own cache.
+- **Primary Action** — whether <kbd>Enter</kbd> opens the details inside Raycast (default) or goes straight to the browser.
 
 ## Development
 

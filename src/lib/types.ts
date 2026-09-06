@@ -23,6 +23,13 @@ export interface DocEntry {
   url: string;
 }
 
+export interface EntryMeta {
+  coroutine?: boolean;
+  intents?: string[];
+}
+
+export type MetaIndex = Record<string, EntryMeta>;
+
 export interface Inventory {
   version: string;
   fetchedAt: number;

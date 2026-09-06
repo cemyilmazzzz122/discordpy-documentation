@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "discordpy-documentation",
   "title": "Discord.py Documentation",
-  "description": "Quickly search the discord.py documentation and read it without leaving Raycast.",
+  "description": "Search the discord.py documentation with intent and coroutine hints, offline caching and copyable boilerplate.",
   "icon": "icon.png",
   "author": "cemyilmazzzz122",
   "license": "MIT",
@@ -15,13 +15,14 @@
       "name": "search-documentation",
       "title": "Search Documentation",
       "subtitle": "Discord.py",
-      "description": "Search classes, methods, attributes, events and exceptions in the discord.py documentation",
+      "description": "Search classes, methods, attributes, events, exceptions and guides in the discord.py documentation",
       "mode": "view"
     }
   ],
   "dependencies": {
     "@raycast/api": "^1.90.0",
     "@raycast/utils": "^1.17.0",
+    "node-html-parser": "^9.0.3",
     "turndown": "^7.2.0"
   },
   "devDependencies": {
@@ -39,5 +40,43 @@
     "fix-lint": "ray lint --fix",
     "lint": "ray lint",
     "publish": "npx @raycast/api@latest publish"
-  }
+  },
+  "preferences": [
+    {
+      "name": "docsVersion",
+      "title": "Documentation Version",
+      "description": "Which discord.py documentation branch to index.",
+      "type": "dropdown",
+      "required": false,
+      "default": "stable",
+      "data": [
+        {
+          "title": "Stable (latest release)",
+          "value": "stable"
+        },
+        {
+          "title": "Latest (master branch)",
+          "value": "latest"
+        }
+      ]
+    },
+    {
+      "name": "primaryAction",
+      "title": "Primary Action",
+      "description": "What pressing Enter on a result does.",
+      "type": "dropdown",
+      "required": false,
+      "default": "detail",
+      "data": [
+        {
+          "title": "Show Details in Raycast",
+          "value": "detail"
+        },
+        {
+          "title": "Open in Browser",
+          "value": "browser"
+        }
+      ]
+    }
+  ]
 }
