@@ -37,6 +37,7 @@ export default function EmbedBuilder() {
 
   return (
     <Form
+      navigationTitle="Embed Builder"
       actions={
         <ActionPanel>
           <Action.SubmitForm
