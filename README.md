@@ -176,7 +176,7 @@ npm run lint    # lint against Raycast's extension rules
 
 ## Attribution
 
-Documentation content belongs to the [discord.py](https://github.com/Rapptz/discord.py) project and is fetched live from Read the Docs; this extension only indexes and renders it. The permission bits in `src/data/permissions.ts` and the colour values in `src/data/colours.ts` are generated from discord.py's own source.
+Documentation content belongs to the [discord.py](https://github.com/Rapptz/discord.py) project and is fetched live from Read the Docs; this extension only indexes and renders it. The icon is discord.py's own logo, taken from the documentation's `snake.svg` and `snake_dark.svg` with the background window artwork removed, which is why it follows your Raycast theme. The permission bits in `src/data/permissions.ts` and the colour values in `src/data/colours.ts` are generated from discord.py's own source.
 
 Note that the documentation carries no `[source]` links, so there is no way to build a line-accurate GitHub link for an entry. **Search Source on GitHub** runs a repository-scoped code search for the definition instead, which always lands on it.
 

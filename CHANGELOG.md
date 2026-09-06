@@ -11,6 +11,7 @@
 - **Search filters** typed into the search bar: `@event`, `kind:method`, `section:tasks`, `intent:members`, `module:ui` and `faq:`, combinable with each other and with a query. `intent:members @event` lists exactly the events that need the members intent.
 - **FAQ answers** from the documentation's FAQ page are indexed and searchable alongside the API, including the code fixes they contain.
 - **Search Source on GitHub** action. The documentation has no `[source]` links, so this runs a repository-scoped code search for the definition rather than pretending to know the line number.
+- discord.py's own logo as the extension icon, in both its light and dark variants, so it follows the Raycast theme.
 - Preferences for the boilerplate bot variable name (`bot` or `client`) and for the application ID used in invite URLs.
 
 - Gateway intent badges and a detail-view warning on every entry whose documentation requires an intent, plus `await` badges on coroutines, both derived from the documentation rather than a hand-written table.
