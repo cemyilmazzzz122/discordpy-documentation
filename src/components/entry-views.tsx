@@ -180,7 +180,7 @@ function EntryActions({
             title="Copy Example Code"
             content={details.example}
             icon={Icon.Code}
-            shortcut={{ modifiers: ["cmd"], key: "e" }}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "e" }}
           />
         )}
         {importLine && (
@@ -194,7 +194,7 @@ function EntryActions({
           <Action.CopyToClipboard
             title="Copy Signature"
             content={details.signature}
-            shortcut={{ modifiers: ["cmd", "shift"], key: "s" }}
+            shortcut={{ modifiers: ["cmd", "opt"], key: "s" }}
           />
         )}
         <Action.CopyToClipboard
