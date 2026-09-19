@@ -32,13 +32,13 @@ Both are derived from the documentation itself rather than a hand-written table,
 | Show Members (classes and exceptions) | <kbd>⌘</kbd><kbd>M</kbd> |
 | Show Referenced Entries | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd> |
 | Copy Boilerplate | <kbd>⌘</kbd><kbd>B</kbd> |
-| Copy Example Code | <kbd>⌘</kbd><kbd>E</kbd> |
+| Copy Example Code | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>E</kbd> |
 | Toggle Preview pane | <kbd>⌘</kbd><kbd>D</kbd> |
 | Add to Favorites | <kbd>⌘</kbd><kbd>F</kbd> |
 | Open in Browser | <kbd>⌘</kbd><kbd>O</kbd> |
 | Copy Qualified Name | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>.</kbd> |
 | Copy Import Statement | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>I</kbd> |
-| Copy Signature | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>S</kbd> |
+| Copy Signature | <kbd>⌘</kbd><kbd>⌥</kbd><kbd>S</kbd> |
 | Copy Markdown Link | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>L</kbd> |
 | Copy Documentation URL | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd> |
 | Search Source on GitHub | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>O</kbd> |
@@ -74,7 +74,7 @@ Selecting an entry renders its documentation as Markdown:
 - Code examples as Python blocks.
 - Cross-references rewritten to absolute links.
 
-Raycast cannot intercept a click on a Markdown link, so cross-references open in the browser. To stay inside Raycast, <kbd>⌘</kbd><kbd>R</kbd> lists every entry the current one references and lets you jump straight into it.
+Raycast cannot intercept a click on a Markdown link, so cross-references open in the browser. To stay inside Raycast, <kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd> lists every entry the current one references and lets you jump straight into it.
 
 ### Permissions Calculator
 

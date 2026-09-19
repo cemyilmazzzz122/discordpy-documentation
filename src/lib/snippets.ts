@@ -18,18 +18,18 @@ const PARAMETER_TYPES: Record<string, string> = {
   poll: "discord.Poll",
 };
 
-function parameterNames(signature: string | null): string[] {
+const UNKNOWN_PARAMETERS = ["*args", "**kwargs"];
+
+function parameterNames(signature: string | null): string[] | null {
   const open = signature?.indexOf("(") ?? -1;
   const close = signature?.lastIndexOf(")") ?? -1;
-  if (!signature || open === -1 || close <= open) return [];
+  if (!signature || open === -1 || close <= open) return null;
 
   return signature
     .slice(open + 1, close)
     .split(",")
     .map((part) => part.split("=")[0].split(":")[0].trim())
-    .filter(
-      (part) => part && part !== "*" && part !== "/" && !part.startsWith("*"),
-    );
+    .filter((part) => part && part !== "*" && part !== "/");
 }
 
 function annotate(name: string): string {
@@ -58,16 +58,17 @@ export function importStatement(entry: DocEntry): string | null {
 function eventBoilerplate(
   entry: DocEntry,
   details: DocDetails | undefined,
-): string {
+): string | null {
+  if (!details) return null;
+
   const variable = getPreferences().botVariable;
   const event = entry.display;
-  const parameters = parameterNames(details?.signature ?? null)
-    .map(annotate)
-    .join(", ");
+  const names = parameterNames(details.signature) ?? UNKNOWN_PARAMETERS;
+  const parameters = names.map(annotate).join(", ");
   // process_commands only exists on commands.Bot, so a plain Client keeps just the guard.
   const guard = "    if message.author.bot:\n        return";
   const body =
-    event === "on_message"
+    event === "on_message" && names.includes("message")
       ? variable === "bot"
         ? `${guard}\n\n    await ${variable}.process_commands(message)`
         : guard
