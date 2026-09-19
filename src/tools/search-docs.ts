@@ -26,7 +26,7 @@ export default async function searchDocs(input: Input) {
     : entries;
   const matches = searchEntries(scope, input.query).slice(
     0,
-    Math.min(input.limit ?? 5, 10),
+    Math.max(0, Math.min(input.limit ?? 5, 10)),
   );
 
   const results = await Promise.all(
