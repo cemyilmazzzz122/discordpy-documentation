@@ -1,0 +1,91 @@
+instructions: |
+  Before answering any question about the discord.py API, call search-docs so the answer is based on the real documentation instead of memory.
+  When the user names one specific class, method, event or attribute and wants its full documentation or member list, call read-entry with its fully qualified name, such as "discord.Client.wait_for" or "discord.ext.commands.Bot".
+  Always mention the gateway intents an event or attribute requires, and mark coroutines so the user knows to await them.
+  Never invent parameters, methods or events that are absent from the tool results.
+
+evals:
+  - input: "@discordpy-documentation how do I wait for a user's reply message?"
+    mocks:
+      search-docs:
+        version: stable
+        results:
+          - name: discord.Client.wait_for
+            kind: method
+            signature: "await wait_for(event, /, *, check=None, timeout=None)"
+            coroutine: true
+            requiredIntents: []
+            documentation: "Waits for a WebSocket event to be dispatched. This could be used to wait for a user to reply to a message, or to react to a message, or to edit a message in a self-contained way. The timeout parameter is passed onto asyncio.wait_for(). By default, it does not timeout."
+            example: |
+              @client.event
+              async def on_message(message):
+                  if message.content.startswith('$greet'):
+                      channel = message.channel
+                      await channel.send('Say hello!')
+
+                      def check(m):
+                          return m.content == 'hello' and m.channel == channel
+
+                      msg = await client.wait_for('message', check=check)
+                      await channel.send(f'Hello {msg.author}!')
+            url: "https://discordpy.readthedocs.io/en/stable/api.html#discord.Client.wait_for"
+        note: "Every field comes from the official discord.py documentation for the indexed version. Do not invent APIs that are absent from these results."
+    expected:
+      - callsTool:
+          name: search-docs
+          arguments:
+            query:
+              includes: wait
+      - includes: wait_for
+      - meetsCriteria: "Explains that wait_for must be awaited and shows a check function that filters the reply by author or channel."
+
+  - input: "@discordpy-documentation which intent do I need for on_member_join?"
+    mocks:
+      search-docs:
+        version: stable
+        results:
+          - name: discord.on_member_join
+            kind: event
+            signature: "discord.on_member_join(member)"
+            coroutine: true
+            requiredIntents:
+              - members
+            documentation: "Called when a Member joins a Guild. This requires Intents.members to be enabled."
+            url: "https://discordpy.readthedocs.io/en/stable/api.html#discord.on_member_join"
+        note: "Every field comes from the official discord.py documentation for the indexed version. Do not invent APIs that are absent from these results."
+    expected:
+      - callsTool:
+          name: search-docs
+          arguments:
+            query:
+              includes: member_join
+      - includes: members
+
+  - input: "@discordpy-documentation show me the full docs and methods of discord.ext.commands.Bot"
+    mocks:
+      read-entry:
+        found: true
+        name: discord.ext.commands.Bot
+        kind: class
+        signature: "class discord.ext.commands.Bot(command_prefix, *, help_command=<default-help-command>, tree_cls=discord.app_commands.CommandTree, description=None, allowed_contexts=..., allowed_installs=..., intents, **options)"
+        coroutine: false
+        requiredIntents: []
+        documentation: "Represents a Discord bot. This class is a subclass of discord.Client and as a result anything that you can do with a discord.Client you can do with this bot. This class also subclasses GroupMixin to provide the functionality to manage commands."
+        references:
+          - discord.Client
+          - discord.ext.commands.GroupMixin
+        members:
+          - add_cog
+          - add_command
+          - get_context
+          - load_extension
+          - process_commands
+          - tree
+        url: "https://discordpy.readthedocs.io/en/stable/ext/commands/api.html#discord.ext.commands.Bot"
+    expected:
+      - callsTool:
+          name: read-entry
+          arguments:
+            name:
+              includes: commands.Bot
+      - includes: command_prefix
